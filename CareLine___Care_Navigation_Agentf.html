@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CareLine – Care Navigation Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7f6;--card:#fff;--ink:#12302f;--mut:#5b7170;--line:#d5e0de;--acc:#0f6b66;--fact:#0f6b66;--asm:#b36b00;--asmbg:#fff4e0;--ok:#e3f3ee;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1b1a;--card:#162826;--ink:#e3efed;--mut:#93aaa7;--line:#2b4441;--acc:#4fc3b9;--fact:#4fc3b9;--asm:#f0b04a;--asmbg:#33260f;--ok:#17352f;--bad:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0e1b1a;--card:#162826;--ink:#e3efed;--mut:#93aaa7;--line:#2b4441;--acc:#4fc3b9;--fact:#4fc3b9;--asm:#f0b04a;--asmbg:#33260f;--ok:#17352f;--bad:#ff8a80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Public Sans',system-ui,sans-serif}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;margin:0 0 .4em;font-weight:600}h2{font-size:21px}h3{font-size:16px}
+header{padding:18px 20px 10px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+header h1{font-size:26px;margin:0}header p{margin:0;color:var(--mut);font-size:13px}
+.banner{margin:0 20px;padding:8px 12px;border:1px solid var(--asm);background:var(--asmbg);border-radius:6px;font-size:13px}
+.wrap{display:grid;grid-template-columns:270px 1fr;gap:18px;padding:16px 20px 40px;max-width:1200px;margin:auto}
+@media(max-width:800px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+.pt{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:10px;border-radius:8px;margin-bottom:8px;cursor:pointer;font:inherit}
+.pt.on{border-color:var(--acc);box-shadow:inset 4px 0 0 var(--acc)}.pt small{display:block;color:var(--mut)}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+.btn{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:600}
+.btn.alt{background:transparent;color:var(--acc);border:1px solid var(--acc)}.btn.sm{padding:3px 8px;font-size:12px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--asm);outline-offset:2px}
+input,select,textarea{width:100%;padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--bg);margin-bottom:8px}
+label{font-size:12px;color:var(--mut);display:block}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.pipe button{flex:1 1 auto;min-width:92px;padding:9px 6px;border:1px solid var(--line);background:var(--card);border-radius:6px;cursor:pointer;font-weight:500}
+.pipe button.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;font-size:13px}.meta b{display:block;font-size:11px;color:var(--mut);font-weight:500}
+.tl{position:relative;margin-left:10px;border-left:2px solid var(--line);padding-left:20px}
+.ev{position:relative;margin-bottom:14px}
+.ev:before{content:"";position:absolute;left:-29px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--fact);border:2px solid var(--fact)}
+.ev.asm:before{background:var(--bg);border:2px dashed var(--asm)}.ev.conf:before{background:var(--fact)}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:600;margin-right:6px}
+.tag.f{background:var(--ok);color:var(--fact)}.tag.a{background:var(--asmbg);color:var(--asm);border:1px dashed var(--asm)}.tag.k{background:var(--line);color:var(--ink)}
+.src{color:var(--mut);font-size:12px}.ev.asm .tx{font-style:italic}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.miss{color:var(--bad);font-weight:600}.good{color:var(--fact);font-weight:600}
+ul.cl{list-style:none;padding:0;margin:0}ul.cl li{padding:5px 0;border-bottom:1px solid var(--line)}
+pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);padding:10px;border-radius:6px;font:13px/1.5 'Public Sans',sans-serif}
+.srch{position:sticky;top:0;background:var(--bg);padding:2px 0 8px;z-index:2}.srch input{margin-bottom:4px}.hint{font-size:12px;color:var(--mut)}.pt .ids{font-size:12px;color:var(--mut);display:block}.tag.s{background:var(--asmbg);color:var(--asm);border:1px dashed var(--asm);margin:4px 0 0}mark{background:var(--asmbg);color:var(--ink);border-radius:3px;padding:0 2px}
+.tag.h{background:var(--acc);color:var(--bg)}.tag.m{border:1px solid var(--acc);color:var(--acc);background:transparent}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+@media print{header,.pipe,.pt,.noprint,aside{display:none!important}.wrap{display:block}body{background:#fff;color:#000}}
+</style></head><body>
+<header><div><h1>CareLine</h1><p>Care-navigation agent: from scattered records to a coordinated plan</p></div>
+<button class="btn alt noprint" id="theme">Toggle theme</button></header>
+<div class="banner"><b>Coordination tool, not a clinician.</b> It organises records and admin tasks only. It never diagnoses or recommends treatment. Items marked "Assumption" are not verified. All demo data, including mobile and Aadhaar numbers, is fictional. Aadhaar is masked by default.</div>
+<div class="wrap">
+<aside>
+ <h3>Patients</h3>
+ <div class="srch noprint"><label for="q">Search patient</label><input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Name, ID, mobile, Aadhaar, hospital or store"><div class="hint" id="qhint"></div></div>
+ <div id="plist"></div>
+ <details class="card noprint"><summary><b>Add patient</b></summary><div style="margin-top:8px">
+  <label>Full name</label><input id="np-name"><label>Age</label><input id="np-age" type="number" min="0" max="120">
+  <label>Sex</label><select id="np-sex"><option>Female</option><option>Male</option><option>Other</option></select>
+  <label>Mobile number (10 digits)</label><input id="np-ph" type="tel" inputmode="numeric" maxlength="14" placeholder="e.g. 9876543210"><label>Aadhaar number (12 digits)</label><input id="np-aa" inputmode="numeric" maxlength="14" placeholder="Optional if mobile is given"><label>Area</label><input id="np-area" placeholder="e.g. Pimpri">
+  <div class="hint" style="margin-bottom:8px">Enter mobile or Aadhaar (or both). A unique patient ID is created automatically.</div><button class="btn" id="np-add">Save patient</button></div></details>
+</aside>
+<main>
+ <div class="card" id="pcard"></div>
+ <div class="pipe" id="pipe"></div>
+ <div id="view"></div>
+</main></div>
+<script>
+const TODAY=new Date("2026-10-01");
+const iso=d=>d.toISOString().slice(0,10);
+const fmt=s=>new Date(s).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"});
+const MONTHS={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+const FAC=[
+{id:1,name:"Sample City Hospital",type:"Hospital",area:"Pimpri",km:2.1,hrs:"24 hours",svc:["Endocrinology","Cardiology","Orthopedics","Lab","Radiology"]},
+{id:2,name:"Sample Heart & Vascular Centre",type:"Hospital",area:"Chinchwad",km:5.4,hrs:"8am–8pm",svc:["Cardiology","Lab","ECG"]},
+{id:3,name:"Sample Diagnostics Lab",type:"Lab",area:"Pimpri",km:1.2,hrs:"7am–9pm",svc:["Lab","HbA1c","Lipid profile"]},
+{id:4,name:"Sample Imaging Centre",type:"Lab",area:"Akurdi",km:4.0,hrs:"8am–7pm",svc:["Radiology","X-ray","MRI"]},
+{id:5,name:"Sample Bone & Joint Clinic",type:"Clinic",area:"Akurdi",km:3.8,hrs:"10am–6pm",svc:["Orthopedics","X-ray"]},
+{id:6,name:"Sample Wellness Pharmacy",type:"Pharmacy",area:"Pimpri",km:0.8,hrs:"8am–11pm",svc:["Prescription refills"]},
+{id:7,name:"Sample Care Medical Store",type:"Pharmacy",area:"Akurdi",km:3.2,hrs:"9am–10pm",svc:["Prescription refills"]},
+{id:8,name:"Sample Chinchwad Pharmacy",type:"Pharmacy",area:"Chinchwad",km:5.0,hrs:"8am–10pm",svc:["Prescription refills"]}];
+const REQ={Endocrinology:[["HbA1c / blood sugar report",/hba1c|glucose|sugar/i],["Current prescription",/\bmg\b/i],["Latest clinical note",/note|visit|consult/i]],
+Cardiology:[["ECG report",/ecg/i],["Lipid profile",/lipid|cholesterol/i],["Current prescription",/\bmg\b/i],["Latest clinical note",/note|visit|consult/i]],
+Orthopedics:[["X-ray / MRI report",/x-ray|mri/i],["Latest clinical note",/note|visit|consult/i],["Current prescription",/\bmg\b/i]]};
+const PREP={Endocrinology:["Fast 8–10 hours only if the clinic asks for it","Bring glucose log","Carry all current medicines"],Cardiology:["Carry previous ECG films","List symptoms with dates","Carry all current medicines"],Orthopedics:["Bring X-ray films / CD","Wear loose clothing","List pain-related questions"]};
+let id=10;
+function mkDoc(type,title,date,text){return{id:id++,type,title,date,text}}
+function parseDate(s){let m=s.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];
+ m=s.match(/(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);if(m)return`${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+ m=s.match(/(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/);if(m&&MONTHS[m[2].toLowerCase()]!==undefined)return iso(new Date(Date.UTC(+m[3],MONTHS[m[2].toLowerCase()],+m[1])));return null}
+function extract(doc){const out=[];
+ doc.text.split(/(?<=[.;\n])\s+/).map(s=>s.trim()).filter(Boolean).forEach(s=>{
+  const d=parseDate(s)||doc.date;let kind=null;
+  if(/\b\d+\s?mg\b/i.test(s))kind="Medication";else if(/hba1c|cbc|creatinine|lipid|cholesterol|glucose|haemoglobin/i.test(s))kind="Lab result";
+  else if(/x-ray|mri|ecg|echo/i.test(s))kind="Imaging";else if(/visit|consult|seen|reviewed|admitted/i.test(s))kind="Visit";
+  const fu=s.match(/follow[- ]?up (?:in|after) (\d+)\s*(day|week|month)/i);
+  if(fu){const n=+fu[1],base=new Date(doc.date);if(fu[2][0]==="d")base.setDate(base.getDate()+n);else if(fu[2][0]==="w")base.setDate(base.getDate()+7*n);else base.setMonth(base.getMonth()+n);
+   out.push({date:iso(base),kind:"Follow-up",text:`Follow-up due around this date (calculated from "${fu[0]}"). Clinic has not confirmed a date.`,src:doc.title,status:"assumption",docId:doc.id})}
+  else if(/probably|likely|suspected|may |might|\?/i.test(s))out.push({date:d,kind:kind||"Note",text:s,src:doc.title,status:"assumption",docId:doc.id});
+  else if(kind)out.push({date:d,kind,text:s,src:doc.title,status:"fact",docId:doc.id})});
+ return out}
+function mkPatient(p,docs,appts){const P={...p,docs,appts,events:[],hist:[],tasks:{},reminders:{},manual:[],approved:false,loc:null};docs.forEach(d=>P.events.push(...extract(d)));return P}
+let S={pts:[
+mkPatient({id:1,name:"Meera Kulkarni",age:58,sex:"Female",phone:"9822011121",aadhaar:"482173301021",area:"Pimpri",pid:"CL-1001"},[
+ mkDoc("Clinical note","Clinic visit note","2026-08-12","Seen in clinic on 12 Aug 2026. Metformin 500 mg twice daily continued. Review HbA1c; follow-up in 6 weeks. Patient reports tiredness, possibly linked to diet?"),
+ mkDoc("Lab report","HbA1c lab report","2026-08-10","HbA1c reported as 7.9% on 10 Aug 2026. Fasting glucose 142 mg/dL.")],
+ [{id:1,dept:"Endocrinology",doctor:"Dr. A. Sharma (sample)",date:"2026-10-09",time:"11:00"}]),
+mkPatient({id:2,name:"Rahul Deshmukh",age:45,sex:"Male",phone:"9765400808",aadhaar:"731905284408",area:"Chinchwad",pid:"CL-1002"},[
+ mkDoc("Prescription","Prescription","2026-09-05","Atorvastatin 20 mg once nightly. Aspirin 75 mg once daily. Prescription dated 05 Sep 2026."),
+ mkDoc("Imaging","ECG report","2026-09-04","ECG done on 04 Sep 2026. Rhythm described as regular. Review needed, may repeat in 3 months.")],
+ [{id:2,dept:"Cardiology",doctor:"Dr. S. Iyer (sample)",date:"2026-10-06",time:"16:30"}]),
+mkPatient({id:3,name:"Anita Pawar",age:34,sex:"Female",phone:"9623155055",aadhaar:"265018947355",area:"Akurdi",pid:"CL-1003"},[
+ mkDoc("Imaging","Knee X-ray report","2026-09-20","X-ray of right knee done on 20 Sep 2026. Report advises orthopedic consult.")],
+ [{id:3,dept:"Orthopedics",doctor:"Dr. R. Joshi (sample)",date:"2026-10-14",time:"10:00"}]),
+mkPatient({id:4,name:"Meera Kulkarni",age:31,sex:"Female",phone:"9890077342",aadhaar:"590326714882",area:"Akurdi",pid:"CL-1004"},[],[])],
+ cur:1,tab:"Documents",floc:"All",q:"",reveal:false,hf:"All"};
+let rid=2001;
+const H={
+1:[{fac:3,date:"2026-06-10",title:"Lab test",text:"HbA1c test done. Report issued.",fref:"LAB-5521"},{fac:1,date:"2026-08-12",title:"Endocrinology OPD",text:"Clinic visit with Dr. A. Sharma (sample).",fref:"OPD-77310"},{fac:6,date:"2026-08-14",title:"Dispensed",text:"Metformin 500 mg, 60 tablets, against the clinic prescription.",fref:"BILL-4471"}],
+2:[{fac:2,date:"2026-09-04",title:"ECG",text:"ECG done. Report issued.",fref:"ECG-2209"},{fac:8,date:"2026-09-06",title:"Dispensed",text:"Atorvastatin 20 mg, 30 tablets. Aspirin 75 mg, 30 tablets.",fref:"BILL-4602"}],
+3:[{fac:4,date:"2026-09-20",title:"Knee X-ray",text:"X-ray of right knee done. Report issued.",fref:"XR-3380"},{fac:7,date:"2026-09-22",title:"Dispensed",text:"Knee support brace, 1 piece.",fref:"BILL-9120"}],
+4:[{fac:5,date:"2026-07-02",title:"Orthopedics OPD",text:"Clinic visit for shoulder pain.",fref:"OPD-1180"},{fac:7,date:"2026-07-03",title:"Dispensed",text:"Pain relief gel, 1 tube.",fref:"BILL-8841"}]};
+S.pts.forEach(p=>{p.hist=(H[p.id]||[]).map(h=>({...h,ref:"REC-"+(rid++)}))});
+const $=s=>document.querySelector(s);const P=()=>S.pts.find(p=>p.id===S.cur);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dg=v=>String(v||"").replace(/\D/g,"");
+const maskA=a=>a&&a.length===12?"XXXX XXXX "+a.slice(8):"Not provided";
+const fullA=a=>a&&a.length===12?a.replace(/(\d{4})(?=\d)/g,"$1 "):"Not provided";
+const fmtPh=n=>n&&n.length===10?n.slice(0,5)+" "+n.slice(5):(n||"Not provided");
+function score(p,q){const t=q.trim().toLowerCase(),d=dg(q);if(!t)return 1;
+ if(d.length>=4&&d===p.aadhaar)return 100;if(d.length>=4&&d===p.phone)return 100;if(t===p.pid.toLowerCase())return 100;
+ let sc=0;if(p.pid.toLowerCase().includes(t))sc=Math.max(sc,60);if(p.name.toLowerCase().includes(t))sc=Math.max(sc,50);if(p.area.toLowerCase().includes(t))sc=Math.max(sc,20);
+ if(d.length>=3&&((p.phone||"").includes(d)||(p.aadhaar||"").includes(d)))sc=Math.max(sc,40);if(histHit(p,q))sc=Math.max(sc,30);return sc}
+const hl=(txt,q)=>{const t=q.trim();if(!t)return esc(txt);const i=String(txt).toLowerCase().indexOf(t.toLowerCase());if(i<0)return esc(txt);return esc(txt.slice(0,i))+"<mark>"+esc(txt.slice(i,i+t.length))+"</mark>"+esc(txt.slice(i+t.length))};
+const nextPid=()=>"CL-"+(Math.max(1000,...S.pts.map(p=>+p.pid.slice(3)||0))+1);
+const TABS=["Documents","Past records","Timeline","Appointment","Follow-ups","Doctor brief"];
+function facOf(i){return FAC.find(x=>x.id===+i)||{name:"Unknown facility",type:"Clinic",area:""}}
+const facName=i=>facOf(i).name,isStore=h=>facOf(h.fac).type==="Pharmacy";
+function histHit(p,q){const t=q.trim().toLowerCase();if(t.length<2)return null;return(p.hist||[]).find(h=>(facName(h.fac)+" "+h.title+" "+h.text+" "+(h.fref||"")+" "+h.ref).toLowerCase().includes(t))||null}
+const cnt=p=>{const s=p.hist.filter(isStore).length;return(p.hist.length-s)+" hospital/lab · "+s+" store records"};
+function R(){renderSide();const p=P();
+ $("#pcard").innerHTML=`<div class="row"><h2 style="margin:0">${esc(p.name)}</h2><span class="src">${esc(p.pid)}</span></div>
+ <div class="meta" style="margin-top:8px"><div><b>Age / sex</b>${p.age} / ${esc(p.sex)}</div><div><b>Mobile</b>${esc(fmtPh(p.phone))}</div><div><b>Aadhaar</b>${S.reveal?fullA(p.aadhaar):maskA(p.aadhaar)} ${p.aadhaar?`<button class="btn sm alt noprint" id="rv">${S.reveal?"Hide":"Show"}</button>`:""}</div><div><b>Area</b>${esc(p.area)}</div><div><b>Documents</b>${p.docs.length}</div><div><b>Past records</b>${p.hist.length}</div><div><b>Awaiting review</b>${p.events.filter(e=>e.status==="assumption").length}</div></div>`;
+ const rv=$("#rv");if(rv)rv.onclick=()=>{S.reveal=!S.reveal;R()};
+ $("#pipe").innerHTML=TABS.map((t,i)=>`<button class="${S.tab===t?"on":""}" data-t="${t}">${t}</button>`).join("");
+ $("#pipe").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;R()});
+ ({Documents:vDocs,"Past records":vHist,Timeline:vTL,Appointment:vAppt,"Follow-ups":vFU,"Doctor brief":vBrief})[S.tab]()}
+function renderSide(){const q=S.q,list=S.pts.map(p=>({p,sc:score(p,q)})).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);
+ const dup=n=>S.pts.filter(x=>x.name.toLowerCase()===n.toLowerCase()).length>1;
+ $("#qhint").textContent=q.trim()?(list.length?list.length+" patient"+(list.length>1?"s":"")+" found. Press Enter to open the top match.":"No patient found. Check the number or add a new patient below."):"Tip: mobile or Aadhaar finds the exact patient even when names match. Hospital or store names find patients with records there.";
+ $("#plist").innerHTML=list.map(({p,sc})=>`<button class="pt ${p.id===S.cur?"on":""}" data-i="${p.id}"><b>${hl(p.name,q)}</b><span class="ids">${hl(p.pid,q)} · ${esc(fmtPh(p.phone))}</span><span class="ids">Aadhaar ${maskA(p.aadhaar)}</span><span class="ids">${cnt(p)}</span>${(h=>h?`<span class="ids">Record: ${hl(facName(h.fac),q)} · ${fmt(h.date)}</span>`:"")(q.trim()?histHit(p,q):null)}<small>${p.age} y · ${esc(p.area)}</small>${sc===100&&q.trim()?'<span class="tag f" style="margin-top:4px">Exact match</span>':""}${dup(p.name)?'<span class="tag s">Same name exists. Check ID</span>':""}</button>`).join("");
+ $("#plist").querySelectorAll(".pt").forEach(b=>b.onclick=()=>{S.cur=+b.dataset.i;S.reveal=false;R()})}
+function vDocs(){const p=P();$("#view").innerHTML=`<div class="g2"><div class="card"><h3>Upload or paste a document</h3>
+ <label>Type</label><select id="d-type"><option>Clinical note</option><option>Lab report</option><option>Prescription</option><option>Imaging</option></select>
+ <label>Title</label><input id="d-title"><label>Document date</label><input id="d-date" type="date" value="2026-09-30">
+ <label>Text (paste, or choose a .txt file)</label><textarea id="d-text" rows="6"></textarea><input type="file" id="d-file" accept=".txt">
+ <button class="btn" id="d-add">Extract to timeline</button></div>
+ <div class="card"><h3>Documents on file</h3>${p.docs.map(d=>`<div style="margin-bottom:10px"><span class="tag k">${esc(d.type)}</span><b>${esc(d.title)}</b> <span class="src">${fmt(d.date)}</span><div class="src">${esc(d.text.slice(0,110))}…</div></div>`).join("")||"<p class=src>No documents yet. Add one to start the timeline.</p>"}</div></div>`;
+ $("#d-file").onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>$("#d-text").value=t)};
+ $("#d-add").onclick=()=>{const t=$("#d-text").value.trim();if(!t){alert("Add some text first.");return}
+  const d=mkDoc($("#d-type").value,$("#d-title").value||$("#d-type").value,$("#d-date").value,t);p.docs.push(d);const ev=extract(d);p.events.push(...ev);p.approved=false;S.tab="Timeline";R()}}
+function vTL(){const p=P();const ev=[...p.events].sort((a,b)=>a.date.localeCompare(b.date));
+ $("#view").innerHTML=`<div class="card"><h2>Patient timeline</h2><p class="src"><span class="tag f">Fact</span>appears in a document as written. <span class="tag a">Assumption</span>inferred or uncertain; a human must confirm or dismiss it.</p>
+ <div class="tl">${ev.map((e,i)=>`<div class="ev ${e.status==="assumption"?"asm":""}"><div><span class="tag ${e.status==="assumption"?"a":"f"}">${e.status==="assumption"?"Assumption":e.status==="confirmed"?"Confirmed by staff":"Fact"}</span><span class="tag k">${e.kind}</span><b>${fmt(e.date)}</b></div>
+ <div class="tx">${esc(e.text)}</div><div class="src">Source: ${esc(e.src)}</div>
+ ${e.status==="assumption"?`<button class="btn sm" data-c="${p.events.indexOf(e)}">Confirm</button> <button class="btn sm alt" data-x="${p.events.indexOf(e)}">Dismiss</button>`:""}</div>`).join("")||"<p>No events yet.</p>"}</div></div>`;
+ $("#view").querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{p.events[+b.dataset.c].status="confirmed";p.approved=false;R()});
+ $("#view").querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>{p.events.splice(+b.dataset.x,1);R()})}
+function vHist(){const p=P();const rec=[...p.hist].sort((a,b)=>b.date.localeCompare(a.date));
+ const shown=rec.filter(h=>S.hf==="All"||(S.hf==="Store"?isStore(h):!isStore(h)));const used=[...new Set(p.hist.map(h=>h.fac))];
+ const opt=t=>FAC.filter(f=>t==="Pharmacy"?f.type==="Pharmacy":f.type!=="Pharmacy").map(f=>`<option value="${f.id}">${esc(f.name)} (${esc(f.area)})</option>`).join("");
+ $("#view").innerHTML=`<div class="g2"><div class="card"><div class="row"><h2>Past records</h2><select id="h-f" style="width:auto"><option value="All">All records</option><option value="Hosp">Hospitals, clinics, labs</option><option value="Store">Medical stores</option></select></div>
+ <p class="src">${esc(p.name)} · ${esc(p.pid)} · Mobile ${esc(fmtPh(p.phone))} · Aadhaar ${maskA(p.aadhaar)}<br>Every record is tied to this patient ID, so same-name patients stay separate.</p>
+ <p><b class="src">Facilities used:</b> ${used.map(i=>`<span class="tag ${facOf(i).type==="Pharmacy"?"m":"h"}">${esc(facName(i))}</span>`).join("")||"<span class=src>None yet</span>"}</p>
+ <div class="tl">${shown.map(h=>{const f=facOf(h.fac);return`<div class="ev"><div><span class="tag ${isStore(h)?"m":"h"}">${isStore(h)?"Medical store":esc(f.type)}</span><b>${fmt(h.date)}</b></div><div class="tx"><b>${esc(f.name)}</b> <span class="src">${esc(f.area)}</span></div><div>${esc(h.title)}: ${esc(h.text)}</div><div class="src">${esc(h.ref)}${h.fref?" · Facility ref "+esc(h.fref):""} · Patient ${esc(p.pid)}</div></div>`}).join("")||"<p>No records for this filter.</p>"}</div></div>
+ <div class="card noprint"><h3>Add a record</h3><label>Record type</label><select id="h-ty"><option value="Hosp">Hospital, clinic or lab visit</option><option value="Store">Medical store purchase</option></select>
+ <label>Facility</label><select id="h-fac"></select><label>Date</label><input id="h-dt" type="date" value="2026-10-01">
+ <label>Department, test or item</label><input id="h-ti"><label>Details</label><textarea id="h-tx" rows="3" placeholder="What was done or dispensed"></textarea>
+ <label>Facility reference (OPD no., lab no. or bill no.)</label><input id="h-fr"><button class="btn" id="h-add">Save record</button>
+ <p class="src">Entered by staff from the facility's own paperwork. Records are shown as written and are not interpreted.</p></div></div>`;
+ $("#h-f").value=S.hf==="Store"?"Store":S.hf==="Hosp"?"Hosp":"All";$("#h-f").onchange=e=>{S.hf=e.target.value;R()};
+ const fill=()=>{$("#h-fac").innerHTML=opt($("#h-ty").value==="Store"?"Pharmacy":"x")};fill();$("#h-ty").onchange=fill;
+ $("#h-add").onclick=()=>{const tx=$("#h-tx").value.trim();if(!tx){alert("Add the details first.");return}
+  p.hist.push({fac:+$("#h-fac").value,date:$("#h-dt").value||"2026-10-01",title:$("#h-ti").value.trim()||($("#h-ty").value==="Store"?"Dispensed":"Visit"),text:tx,fref:$("#h-fr").value.trim(),ref:"REC-"+(rid++)});R()}}
+function missing(p,a){const txt=p.docs.map(d=>d.type+" "+d.title+" "+d.text).join(" | ");return(REQ[a.dept]||[]).map(([l,rx])=>({l,ok:rx.test(txt)}))}
+function vAppt(){const p=P();const a=p.appts[0];
+ if(!a){$("#view").innerHTML=`<div class="card"><h2>Appointment</h2><label>Department</label><select id="a-d">${Object.keys(REQ).map(k=>`<option>${k}</option>`).join('')}</select><label>Date</label><input id="a-dt" type="date"><button class="btn" id="a-add">Add appointment</button></div>`;
+  $("#a-add").onclick=()=>{p.appts.push({id:id++,dept:$("#a-d").value,doctor:"To be assigned",date:$("#a-dt").value||"2026-10-15",time:"TBC"});R()};return}
+ const m=missing(p,a),days=Math.round((new Date(a.date)-TODAY)/864e5),tasks=PREP[a.dept]||[];
+ const fac=FAC.filter(f=>S.floc==="All"||f.type===S.floc).filter(f=>f.svc.includes(a.dept)||f.type!=="Hospital"&&f.type!=="Clinic"||S.floc!=="All").sort((x,y)=>x.km-y.km);
+ const miss=m.filter(x=>!x.ok);
+ $("#view").innerHTML=`<div class="g2"><div class="card"><h2>${esc(a.dept)} appointment</h2><p><b>${fmt(a.date)}</b> at ${esc(a.time)} · ${days>=0?`in ${days} day${days===1?"":"s"}`:"past"}<br>${esc(a.doctor)}</p>
+ <p><b>Venue:</b> ${p.loc?esc(FAC.find(f=>f.id===p.loc).name):"<span class=miss>Not chosen. Pick one on the right.</span>"}</p>
+ <h3>Documents needed</h3><ul class="cl">${m.map(x=>`<li>${x.ok?'<span class=good>Found</span>':'<span class=miss>Missing</span>'} · ${x.l}</li>`).join("")}</ul>
+ ${miss.length?`<button class="btn alt noprint" id="a-req" style="margin-top:8px">Draft request for missing documents</button><pre id="a-out" hidden></pre>`:""}
+ <h3 style="margin-top:14px">Preparation checklist</h3><ul class="cl">${tasks.map((t,i)=>`<li><label style="color:inherit;font-size:14px"><input type="checkbox" style="width:auto;margin:0 6px 0 0" data-t="${a.id}-${i}" ${p.tasks[a.id+"-"+i]?"checked":""}>${t}</label></li>`).join("")}</ul></div>
+ <div class="card"><h2>Locations near ${esc(p.area)}</h2><label>Filter by type</label><select id="f-t">${["All","Hospital","Clinic","Lab","Pharmacy"].map(t=>`<option ${S.floc===t?"selected":""}>${t}</option>`).join("")}</select>
+ ${fac.map(f=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${f.name}</b> <span class="tag k">${f.type}</span><div class="src">${f.area} · ${f.km} km · ${f.hrs}</div><div class="src">${f.svc.join(", ")}</div>
+ <button class="btn sm ${p.loc===f.id?"":"alt"}" data-l="${f.id}">${p.loc===f.id?"Selected":"Use this venue"}</button> <a class="src" target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent(f.name+" "+f.area)}">Open in maps</a></div>`).join("")}
+ <p class="src">Facilities are sample entries. Confirm hours and services with the venue before travel.</p></div></div>`;
+ $("#f-t").onchange=e=>{S.floc=e.target.value;R()};
+ $("#view").querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{p.loc=+b.dataset.l;R()});
+ $("#view").querySelectorAll("[data-t]").forEach(b=>b.onchange=()=>{p.tasks[b.dataset.t]=b.checked});
+ const rq=$("#a-req");if(rq)rq.onclick=()=>{const o=$("#a-out");o.hidden=false;o.textContent=`Hello,\n\nFor ${p.name}'s ${a.dept} appointment on ${fmt(a.date)}, we could not find the following in our records:\n${miss.map(x=>"- "+x.l).join("\n")}\n\nCould you share these before the visit, or bring copies?\n\nThank you.\n(Draft for staff review. Not sent.)`}}
+function vFU(){const p=P();const items=[...p.events.filter(e=>e.kind==="Follow-up"),...p.manual];
+ $("#view").innerHTML=`<div class="card"><h2>Follow-up reminders</h2><p class="src">Dates calculated from notes are assumptions until staff confirm them with the clinic.</p>
+ ${items.map((e,i)=>{const d=Math.round((new Date(e.date)-TODAY)/864e5);return`<div style="padding:10px 0;border-bottom:1px solid var(--line)"><span class="tag ${e.status==="assumption"?"a":"f"}">${e.status==="assumption"?"Assumption":"Confirmed"}</span><b>${fmt(e.date)}</b> <span class="${d<0?"miss":"src"}">${d<0?Math.abs(d)+" days overdue":"in "+d+" days"}</span><div>${esc(e.text)}</div>
+ <label style="display:inline;color:inherit"><input type="checkbox" style="width:auto" data-r="${i}" ${p.reminders[e.date+e.text]?"checked":""}> Reminder set</label> <button class="btn sm alt" data-m="${i}">Draft message</button><pre hidden id="m${i}"></pre></div>`}).join("")||"<p>No follow-ups found in documents.</p>"}
+ <h3 style="margin-top:14px">Add follow-up</h3><div class="row"><input id="m-date" type="date" style="flex:1"><input id="m-tx" placeholder="What is it for?" style="flex:2"><button class="btn" id="m-add">Add</button></div></div>`;
+ $("#view").querySelectorAll("[data-r]").forEach(b=>b.onchange=()=>{const e=items[+b.dataset.r];p.reminders[e.date+e.text]=b.checked});
+ $("#view").querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{const e=items[+b.dataset.m],o=$("#m"+b.dataset.m);o.hidden=false;o.textContent=`Hello ${p.name}, this is a reminder from your care team to arrange a follow-up visit around ${fmt(e.date)}. Please call the clinic to confirm a time.\n(Draft for staff review. Not sent.)`});
+ $("#m-add").onclick=()=>{if(!$("#m-date").value)return;p.manual.push({date:$("#m-date").value,kind:"Follow-up",text:$("#m-tx").value||"Follow-up",status:"confirmed"});R()}}
+function vBrief(){const p=P();const f=p.events.filter(e=>e.status!=="assumption").sort((a,b)=>a.date.localeCompare(b.date)),as=p.events.filter(e=>e.status==="assumption");
+ const a=p.appts[0],m=a?missing(p,a).filter(x=>!x.ok):[];
+ $("#view").innerHTML=`<div class="card"><div class="row"><h2>Doctor briefing</h2><div class="noprint"><button class="btn alt" onclick="window.print()">Print</button></div></div>
+ <p><b>${esc(p.name)}</b>, ${p.age} y, ${esc(p.sex)} · ${esc(p.pid)} · Mobile ${esc(fmtPh(p.phone))} · Aadhaar ${maskA(p.aadhaar)}</p>
+ ${a?`<p>Upcoming: <b>${esc(a.dept)}</b>, ${fmt(a.date)} ${esc(a.time)}${p.loc?" at "+esc(FAC.find(f=>f.id===p.loc).name):""}</p>`:""}
+ <h3>Documented facts</h3><ul class="cl">${f.map(e=>`<li><b>${fmt(e.date)}</b> · ${e.kind}: ${esc(e.text)} <span class="src">(${esc(e.src)})</span></li>`).join("")||"<li>None</li>"}</ul>
+ <h3 style="margin-top:12px">Needs clinician verification</h3><ul class="cl">${as.map(e=>`<li><span class="tag a">Assumption</span>${esc(e.text)}</li>`).join("")||"<li>None pending</li>"}</ul>
+ <h3 style="margin-top:12px">Administrative gaps</h3><ul class="cl">${m.map(x=>`<li class="miss">Missing: ${x.l}</li>`).join("")||"<li>No missing documents</li>"}</ul>
+ <h3 style="margin-top:12px">Past hospital and medical store records</h3><ul class="cl">${[...p.hist].sort((a,b)=>b.date.localeCompare(a.date)).map(h=>`<li><b>${fmt(h.date)}</b> · ${esc(facName(h.fac))} (${isStore(h)?"Medical store":esc(facOf(h.fac).type)}): ${esc(h.title)}. ${esc(h.text)} <span class="src">(${esc(h.ref)})</span></li>`).join("")||"<li>None on file</li>"}</ul>
+ <p class="src">This brief summarises records only. It contains no diagnosis or treatment advice.</p>
+ <label class="noprint" style="color:inherit;font-size:14px"><input type="checkbox" id="ap" style="width:auto" ${p.approved?"checked":""}> A staff member has reviewed this brief</label>
+ <p class="${p.approved?"good":"src"}">${p.approved?"Reviewed by staff on "+fmt(iso(TODAY)):"Not yet reviewed. Do not share with the doctor until reviewed."}</p></div>`;
+ $("#ap").onchange=e=>{p.approved=e.target.checked;R()}}
+$("#q").oninput=e=>{S.q=e.target.value;renderSide()};
+$("#q").onkeydown=e=>{if(e.key==="Enter"){const l=S.pts.map(p=>({p,sc:score(p,S.q)})).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc);if(l.length&&S.q.trim()){S.cur=l[0].p.id;S.reveal=false;R()}}if(e.key==="Escape"){S.q="";e.target.value="";renderSide()}};
+$("#np-add").onclick=()=>{const n=$("#np-name").value.trim(),ph=dg($("#np-ph").value).slice(-10),aa=dg($("#np-aa").value);
+ if(!n){alert("Enter a name.");return}
+ if(!ph&&!aa){alert("Enter a mobile number or an Aadhaar number so this patient can be identified.");return}
+ if(ph&&ph.length!==10){alert("Mobile number must be 10 digits.");return}
+ if(aa&&aa.length!==12){alert("Aadhaar number must be 12 digits.");return}
+ const d=S.pts.find(p=>(aa&&p.aadhaar===aa)||(ph&&p.phone===ph));
+ if(d){alert("This mobile or Aadhaar already belongs to "+d.name+" ("+d.pid+"). Opening that record instead of creating a duplicate.");S.cur=d.id;S.q="";$("#q").value="";R();return}
+ const p=mkPatient({id:id++,name:n,age:+$("#np-age").value||0,sex:$("#np-sex").value,phone:ph,aadhaar:aa,area:$("#np-area").value||"Pimpri",pid:nextPid()},[],[]);
+ S.pts.push(p);S.cur=p.id;S.tab="Documents";S.q="";$("#q").value="";S.reveal=false;["#np-name","#np-age","#np-ph","#np-aa","#np-area"].forEach(s=>$(s).value="");R()};
+$("#theme").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()==="#0e1b1a";r.dataset.theme=d?"light":"dark"};
+R();
+</script></body></html>
